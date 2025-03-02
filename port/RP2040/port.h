@@ -37,7 +37,7 @@
 #define assert_param(expr) ((void)0)
 
 
-typedef uint8_t BOOL;
+typedef bool BOOL;
 
 typedef unsigned char UCHAR;
 typedef char CHAR;
@@ -49,11 +49,11 @@ typedef uint32_t ULONG;
 typedef int32_t LONG;
 
 #ifndef TRUE
-#define TRUE            1
+#define TRUE            true
 #endif
 
 #ifndef FALSE
-#define FALSE           0
+#define FALSE           false
 #endif
 
 void EnterCriticalSection(void);

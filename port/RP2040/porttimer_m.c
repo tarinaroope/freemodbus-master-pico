@@ -35,9 +35,11 @@ static uint32_t alarm_timeout = 0;
 static alarm_id_t alarm_id = -1;
 
 /* ----------------------- static functions ---------------------------------*/
+
 static int64_t __isr prvvTIMERExpiredISR(alarm_id_t id, void *user_data);
 
 /* ----------------------- Start implementation -----------------------------*/
+
 BOOL xMBMasterPortTimersInit(USHORT usTimeOut50us)
 {
     alarm_timeout = usTimeOut50us * 20;
@@ -49,6 +51,7 @@ inline void vMBMasterPortTimersT35Enable()
     if (alarm_id >= 0)
     {
         cancel_alarm(alarm_id);
+        alarm_id = -1;
     }
     if (alarm_timeout)
     {
@@ -61,6 +64,7 @@ void vMBMasterPortTimersConvertDelayEnable()
     if (alarm_id >= 0)
     {
         cancel_alarm(alarm_id);
+        alarm_id = -1;
     }
     if (alarm_timeout)
     {
@@ -75,6 +79,7 @@ void vMBMasterPortTimersRespondTimeoutEnable()
     if (alarm_id >= 0)
     {
         cancel_alarm(alarm_id);
+        alarm_id = -1;
     }
     if (alarm_timeout)
     {

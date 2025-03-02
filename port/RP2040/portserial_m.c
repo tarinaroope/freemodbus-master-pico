@@ -36,13 +36,10 @@
 
 #define STOP_BITS 1
 
-// We are using pins 0 and 1, but see the GPIO function select table in the
-// datasheet for information on which other pins can be used.
 #define UART_TX_PIN0 0
 #define UART_RX_PIN0 1
 #define UART_TX_PIN1 4
 #define UART_RX_PIN1 5
-
 
 /* ----------------------- Static variables ---------------------------------*/
 
@@ -53,12 +50,12 @@ static uart_inst_t* UART_ID = UART_ID0;
 
 
 /* ----------------------- static functions ---------------------------------*/
+
 static void prvvUARTTxReadyISR(void);
 static void prvvUARTRxISR(void);
 static void prvvUARTISR( void );
 static int64_t prvvOneTimeTimerExpiredISR(alarm_id_t id, void *user_data);
 static int64_t prvvOneTimeTimerExpiredISR2(alarm_id_t id, void *user_data);
-
 
 /* ----------------------- Start implementation -----------------------------*/
 BOOL xMBMasterPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,

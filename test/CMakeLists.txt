@@ -14,6 +14,7 @@ add_executable(freemodbus-pico-test
 target_link_libraries(freemodbus-pico-test 
         freemodbus-pico
         pico_stdlib                        # for core pico functionality
+        pico_multicore
         )
 
 # Disable both for stdio
