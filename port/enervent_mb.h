@@ -36,7 +36,7 @@ bool envent_get_request_result(eMBMasterReqErrCode *eResult);
  * @return Pointer to an array of uint8_t representing the coil values.
  */
 
-uint8_t* envnet_get_coil_value_array();
+uint8_t* envent_get_coil_value_array();
 
 /**
  * @brief Retrieve the array of register values.

@@ -18,6 +18,12 @@ void core1_main(void)
     printf("Start listening for notifications in Core 1...\n");
     sleep_ms(5000);
     //const coil_def_t* coilArray = get_coil_def_array();
+    envent_command_t cmd;
+    cmd.address = 1;
+    cmd.target = EN_COIL;
+    cmd.value = 0;
+    queue_try_add(&gInterface.command_queue,&cmd);
+    sleep_ms(5000);
     const register_def_t* registerArray = get_register_def_array();
     while (true)
     {

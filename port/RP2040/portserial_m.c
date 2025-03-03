@@ -24,6 +24,8 @@
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 
+#include <stdio.h>
+
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
@@ -148,7 +150,7 @@ BOOL xMBMasterPortSerialPutByte(CHAR ucByte)
      * by the protocol stack if pxMBFrameCBTransmitterEmpty( ) has been
      * called. */
     uart_putc_raw(UART_ID, ucByte);
-   
+       
     return TRUE;
 }
 

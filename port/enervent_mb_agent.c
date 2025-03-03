@@ -77,6 +77,11 @@ static bool enagent_write_coil(uint16_t coil_address, uint16_t value)
     {
         return false;
     }
+    uint16_t write_value = 0x0000;
+    if (value)
+    {
+        write_value = 0xff00;
+    }
 
     const coil_def_t *coil_defs = get_coil_def_array();
     int16_t index = find_coil_index_binary(coil_defs, coil_address);
@@ -84,7 +89,7 @@ static bool enagent_write_coil(uint16_t coil_address, uint16_t value)
     {
         if (!coil_defs[index].base.readonly)
         {
-            eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, value, -1);
+            eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, write_value, -1);
             return true;
         }
     }
@@ -113,7 +118,7 @@ static bool enagent_write_holding_register(uint16_t register_address, uint16_t v
 
 static void enagent_refresh_coil_data(envent_ipc_interface_t* interface)
 {
-    uint8_t* coils = envnet_get_coil_value_array();
+    uint8_t* coils = envent_get_coil_value_array();
     critical_section_enter_blocking(&interface->update_mutex);
     memcpy(interface->coilValues, coils, COIL_DEFINITION_COUNT);
     critical_section_exit(&interface->update_mutex);

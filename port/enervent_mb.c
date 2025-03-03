@@ -58,7 +58,7 @@ eMBErrorCode eMBMasterRegCoilsCB(UCHAR *pucRegBuffer, USHORT usAddress,
     eMBErrorCode eStatus = MB_ENOERR;
     USHORT iRegIndex, iRegBitIndex;
     const coil_def_t *pucCoilBuf = get_coil_def_array();
-    uint8_t *pucCoilValues = envnet_get_coil_value_array();
+    uint8_t *pucCoilValues = envent_get_coil_value_array();
 
     /* it already plus one in modbus function method. */
     usAddress--;
@@ -132,7 +132,7 @@ void eMBMasterSetReqResult(eMBMasterReqErrCode eResult)
     eErrCode = eResult;
 }
 
-uint8_t *envnet_get_coil_value_array()
+uint8_t *envent_get_coil_value_array()
 {
     return pucCoilValues;
 }
