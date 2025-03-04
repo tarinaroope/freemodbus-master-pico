@@ -49,45 +49,48 @@ typedef struct
 } envent_ipc_interface_t;
 
 /**
- * @enum envent_command_target_t
- * @brief Enumeration for command target types.
+ * @brief Structure representing an Envent command.
  * 
- * This enumeration defines the possible targets for commands.
+ * This structure is used to define a command that can be sent to an Envent device.
+ * It contains the target address, the value to be written, and a function pointer
+ * to the command function that will be executed.
+ * Note! Create using the command creation functions.
  * 
- * @var EN_HOLDING_REG
- * Command target is a holding register.
- * 
- * @var EN_COIL
- * Command target is a coil.
- */
-typedef enum
-{
-    EN_HOLDING_REG,
-    EN_COIL
-} envent_command_target_t;
-
-/**
- * @struct envent_command_t
- * @brief Structure for representing a command.
- * 
- * This structure holds the information for a command, including the target,
- * address, and value.
- * 
- * @var envent_command_t::target
- * The target of the command, specified by the envent_command_target_t enumeration.
- * 
- * @var envent_command_t::address
- * The address for the command.
- * 
- * @var envent_command_t::value
- * The value for the command.
+ * @param address The register address to which the command will be sent.
+ * @param value The value to be written to the specified register address.
+ * @param command_function A function pointer to the command function that takes
+ *        the register address and value as parameters and returns a boolean indicating
+ *        the success or failure of the command execution.
  */
 typedef struct
 {
-    envent_command_target_t target;
+   // envent_command_target_t target;
     uint16_t address;
     uint16_t value;
+    bool (*command_function)(uint16_t /*register_address*/, uint16_t /*value*/); 
 } envent_command_t;
+
+/**
+ * @brief Creates a write coil command for the Envent Modbus agent.
+ *
+ * This function initializes an Envent command structure to write a value to a specified coil address.
+ *
+ * @param coil_address The address of the coil to write to.
+ * @param value The value to write to the coil. A non-zero value will be converted to 0xFF, and zero will remain 0.
+ * @param command Pointer to the Envent command structure to be initialized.
+ */
+void envent_create_write_coil_command(uint16_t coil_address, uint16_t value, envent_command_t* command);
+
+/**
+ * @brief Creates a write register command for the Envent Modbus agent.
+ *
+ * This function initializes an Envent command structure to write a value to a specified register address.
+ *
+ * @param register_address The address of the register to write to.
+ * @param value The value to write to the register.
+ * @param command Pointer to the Envent command structure to be initialized.
+ */
+void envent_create_write_register_command(uint16_t register_address, uint16_t value, envent_command_t* command);
 
 /**
  * @brief Starts the command loop for the agent.

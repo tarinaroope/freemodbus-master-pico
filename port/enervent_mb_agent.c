@@ -56,31 +56,11 @@ static int64_t __isr refresh_timer_expired(alarm_id_t id, void *user_data)
     }
 }
 
-static void enagent_refresh_coils()
-{
-    const coil_def_t *coil_defs = get_coil_def_array();
-    // Read as many coils so that we get the last one as well
-    eMBMasterReqReadCoils(ENAGENT_SLAVE_ID, coil_defs[0].base.address, LAST_COIL_ADDRESS - coil_defs[0].base.address + 1, -1);
-}
-
-static void enagent_refresh_registers(uint8_t batch)
-{
-  //  const register_def_t *regArray = get_register_def_array();
-    // Read as many coils so that we get the last one as well
-    //eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID, regArray[0].base.address, LAST_REGISTER_ADDRESS - regArray[0].base.address + 1, -1);
-    eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID, holdingRegBatches[batch][0], holdingRegBatches[batch][1], -1);
-}
-
 static bool enagent_write_coil(uint16_t coil_address, uint16_t value)
 {
     if (coil_address > LAST_COIL_ADDRESS)
     {
         return false;
-    }
-    uint16_t write_value = 0x0000;
-    if (value)
-    {
-        write_value = 0xff00;
     }
 
     const coil_def_t *coil_defs = get_coil_def_array();
@@ -89,7 +69,7 @@ static bool enagent_write_coil(uint16_t coil_address, uint16_t value)
     {
         if (!coil_defs[index].base.readonly)
         {
-            eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, write_value, -1);
+            eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, value, -1);
             return true;
         }
     }
@@ -116,6 +96,31 @@ static bool enagent_write_holding_register(uint16_t register_address, uint16_t v
     return false;
 }
 
+void envent_create_write_coil_command(uint16_t coil_address, uint16_t value, envent_command_t* command)
+{
+    command->address = coil_address;
+    value = (value > 0) ? 0xff : 0;
+    command->command_function = enagent_write_coil;
+}
+
+void envent_create_write_register_command(uint16_t register_address, uint16_t value, envent_command_t* command)
+{
+    command->address = register_address;
+    command->value = value;
+    command->command_function = enagent_write_holding_register;
+}
+
+static void enagent_refresh_coils()
+{
+    const coil_def_t *coil_defs = get_coil_def_array();
+    eMBMasterReqReadCoils(ENAGENT_SLAVE_ID, coil_defs[0].base.address, LAST_COIL_ADDRESS - coil_defs[0].base.address + 1, -1);
+}
+
+static void enagent_refresh_registers(uint8_t batch)
+{
+    eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID, holdingRegBatches[batch][0], holdingRegBatches[batch][1], -1);
+}
+
 static void enagent_refresh_coil_data(envent_ipc_interface_t* interface)
 {
     uint8_t* coils = envent_get_coil_value_array();
@@ -134,8 +139,6 @@ static void enagent_refresh_holding_data(envent_ipc_interface_t* interface)
 
 bool enagent_start_command_loop(envent_ipc_interface_t* interface)
 {
-    // TODO: Pass the queue here and initialize it in the calling function
-
     critical_section_init(&mutex);
 
     if (eMBMasterInit(MB_RTU, ENAGENT_SLAVE_ID, 19200, MB_PAR_NONE) != MB_ENOERR)
@@ -167,7 +170,7 @@ bool enagent_start_command_loop(envent_ipc_interface_t* interface)
 
     // Setup data refresh timer
     add_alarm_in_ms(ENAGENT_DATA_REFRESH_PERIOD, refresh_timer_expired, NULL, true);
-    printf("moi5");
+
     while (true)
     {
         critical_section_enter_blocking(&mutex);
@@ -178,36 +181,15 @@ bool enagent_start_command_loop(envent_ipc_interface_t* interface)
             {
                 isIdle = false;
                 critical_section_exit(&mutex);
-
-                switch (cmd.target)
+                if (cmd.command_function(cmd.address, cmd.value))
                 {
-                case EN_HOLDING_REG:
-                    if (enagent_write_holding_register(cmd.address, cmd.value))
-                    {
-                        gState = ENA_STATE_UPDATING_VALUE;
-                    }
-                    else
-                    {
-                        // Failure
-                        isIdle = true;
-                    }
-                    // TODO error handling
-                    break;
-
-                case EN_COIL:
-                    if (enagent_write_coil(cmd.address, cmd.value))
-                    {
-                        gState = ENA_STATE_UPDATING_VALUE;
-                    }
-                    else
-                    {
-                        // Failure
-                        isIdle = true;
-                    }
-                    break;
-
-                default:
-                    // Todo Error
+                    gState = ENA_STATE_UPDATING_VALUE;
+                }
+                else
+                {
+                    // Failure
+                    gState = ENA_STATE_NONE;
+                    isIdle = true;
                 }
             }
             else

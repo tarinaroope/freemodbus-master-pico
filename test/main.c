@@ -19,9 +19,7 @@ void core1_main(void)
     sleep_ms(5000);
     //const coil_def_t* coilArray = get_coil_def_array();
     envent_command_t cmd;
-    cmd.address = 1;
-    cmd.target = EN_COIL;
-    cmd.value = 0;
+    envent_create_write_register_command(68, 100, &cmd);
     queue_try_add(&gInterface.command_queue,&cmd);
     sleep_ms(5000);
     const register_def_t* registerArray = get_register_def_array();
