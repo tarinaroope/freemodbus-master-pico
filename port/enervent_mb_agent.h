@@ -20,6 +20,8 @@
 
 #define ENAGENT_SLAVE_ID 1
 
+typedef struct enagent_task_controller_t enagent_task_controller_t;
+
 /**
  * @brief Structure representing the IPC interface for Envent.
  * 
@@ -67,7 +69,8 @@ typedef struct
    // envent_command_target_t target;
     uint16_t address;
     uint16_t value;
-    bool (*command_function)(uint16_t /*register_address*/, uint16_t /*value*/); 
+    bool (*command_function)(enagent_task_controller_t* /*self*/, 
+        uint16_t /*register_address*/, uint16_t /*value*/); 
 } envent_command_t;
 
 /**
