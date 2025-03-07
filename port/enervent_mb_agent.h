@@ -102,9 +102,10 @@ void envent_create_write_register_command(uint16_t register_address, uint16_t va
  * IPC interface.
  * 
  * @param interface Pointer to the IPC interface to be used by the agent.
+ * @param refreshRate How often the agent should refresh the modbus data (seconds)
  * @return true if the command loop started successfully, false otherwise.
  */
-bool enagent_start_command_loop(envent_ipc_interface_t *interface);
+bool enagent_start_command_loop(envent_ipc_interface_t *interface, uint8_t refresh_rate);
 
 
 #endif

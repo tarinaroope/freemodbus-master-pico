@@ -18,11 +18,7 @@ void core1_main(void)
 {
     EVLOG_INFO("Start listening for notifications in Core 1...");
     sleep_ms(5000);
-    //const coil_def_t* coilArray = get_coil_def_array();
-    //envent_command_t cmd;
-    //envent_create_write_register_command(68, 100, &cmd);
-    //queue_try_add(&gInterface.command_queue,&cmd);
-    //sleep_ms(5000);
+
     const register_def_t* registerArray = get_register_def_array();
     const coil_def_t* coilArray = get_coil_def_array();
     while (true)
@@ -34,6 +30,8 @@ void core1_main(void)
             for (int i = 0; i < gInterface.coilCount; i++)
             {
                 EVLOG_INFO("Coil Address %d, Value %d", coilArray[i].base.address, gInterface.coilValues[i]);
+                printf("Coil Address %d, Value %d\n", coilArray[i].base.address, gInterface.coilValues[i]);
+
             }
             for (int i = 0; i < gInterface.registerCount; i++)
             {
@@ -51,16 +49,14 @@ int main(void)
     stdio_init_all();
 
     sleep_ms(1000);
-
     EVLOG_INFO("Init...");
-
+ 
     queue_init(&gInterface.command_queue, sizeof(envent_command_t), 10);
     queue_init(&gInterface.notify_queue, sizeof(uint8_t), 1);
 
-   // multicore_reset_core1();
     multicore_launch_core1(core1_main);
     // Enter loop
-    if (!enagent_start_command_loop(&gInterface))
+    if (!enagent_start_command_loop(&gInterface, 10))
     {
         EVLOG_INFO("Fatal error in starting command loop!");
     }

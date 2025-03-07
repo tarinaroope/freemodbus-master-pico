@@ -36,6 +36,8 @@ struct enagent_task_controller_t
 
     uint16_t current_task_address;
     critical_section_t mutex;
+
+    uint8_t refresh_rate;
 };
 
 #define BATCH_COUNT 6
@@ -321,7 +323,7 @@ static int64_t __isr enagent_refresh_timer_expired(alarm_id_t id, void *user_dat
     if (controller->state == ENA_STATE_IDLE)
     {
         enagent_set_task_state(controller, ENA_STATE_START_REFRESH, false);
-        return (ENAGENT_DATA_REFRESH_PERIOD * 1000UL);
+        return ((uint32_t)(controller->refresh_rate * 1000UL));
     }
     else
     {
@@ -330,7 +332,7 @@ static int64_t __isr enagent_refresh_timer_expired(alarm_id_t id, void *user_dat
     }
 }
 
-bool enagent_start_command_loop(envent_ipc_interface_t *interface)
+bool enagent_start_command_loop(envent_ipc_interface_t *interface, uint8_t refresh_rate)
 {
     EVLOG_DEBUG("Initializing command loop");
 
@@ -368,7 +370,8 @@ bool enagent_start_command_loop(envent_ipc_interface_t *interface)
     (void)eMBMasterPoll();
 
     // Setup data refresh timer
-    add_alarm_in_ms(ENAGENT_DATA_REFRESH_PERIOD, enagent_refresh_timer_expired,
+    task_controller.refresh_rate = refresh_rate;
+    add_alarm_in_ms((uint32_t)(task_controller.refresh_rate * 1000UL), enagent_refresh_timer_expired,
                     (void *)&task_controller, true);
 
     while (true)
