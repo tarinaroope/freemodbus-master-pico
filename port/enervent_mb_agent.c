@@ -41,12 +41,12 @@ struct enagent_task_controller_t
 #define BATCH_COUNT 6
 static const uint16_t holdingRegBatches[BATCH_COUNT][2] =
     {
-        {6, 100},
-        {105, 100},
-        {340, 20},
-        {538, 65},
-        {650, 50},
-        {700, 99}};
+        {6, 71},    // 6-76
+        {100, 97},  // 100-196
+        {343, 52},  // 340-391
+        {538, 62},  // 538-599
+        {676, 3},   // 676-678
+        {710, 25}}; // 710-734
 
 static void enagent_set_task_state(enagent_task_controller_t *self,
                                    enagent_task_state_t state, bool safe);

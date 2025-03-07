@@ -12,10 +12,10 @@
 #include "pico/stdlib.h"
 
 #define LAST_COIL_ADDRESS                   49  ///< Last coil number to read
-#define LAST_REGISTER_ADDRESS               798 ///< Last holding register number to read
+#define LAST_REGISTER_ADDRESS               734 ///< Last holding register number to read
 
 #define COIL_DEFINITION_COUNT               17  ///< Number of coils to read
-#define REGISTER_DEFINITION_COUNT           76  ///< Number of holding registers to read
+#define REGISTER_DEFINITION_COUNT           69  ///< Number of holding registers to read
 
 /**
  * @enum data_type_def_t
@@ -29,14 +29,24 @@ typedef enum
     ENUMERATION  ///< Enumeration
 } data_type_def_t;
 
+typedef enum
+{
+    REGTYPE_SWITCH,
+    REGTYPE_SENSOR,
+    REGTYPE_SETTING,
+    REGTYPE_STATUS
+} base_type_def_t;
+
 /**
  * @struct base_def_t
  * @brief Base structure for coil and register definitions.
  */
 typedef struct 
 {
-    uint16_t address; ///< Address of the coil or register
-    bool readonly;    ///< Read-only flag
+    uint16_t        address;    ///< Address of the coil or register
+    bool            readonly;   ///< Read-only flag
+    base_type_def_t base_type;
+
 } base_def_t;
 
 /**
@@ -45,9 +55,9 @@ typedef struct
  */
 typedef struct 
 {
-    base_def_t base;       ///< Base definition
-    data_type_def_t type;  ///< Data type of the register
-    int8_t multiplier;     ///< Multiplier for the register value
+    base_def_t      base;       ///< Base definition
+    data_type_def_t type;       ///< Data type of the register
+    int8_t          multiplier; ///< Multiplier for the register value
 } register_def_t;
 
 /**
