@@ -67,7 +67,7 @@ static const register_def_t holding_defs[] = {
     {{126, false, REGTYPE_SETTING}, INT16, 1},
     {{128, false, REGTYPE_SETTING}, INT16, 1},
     {{132, false, REGTYPE_SETTING}, INT16, 1},
-    {{134, true}, INT16, 10},
+    {{134, true, REGTYPE_SENSOR}, INT16, 10},
     {{135, false, REGTYPE_SETTING}, INT16, 10},
     {{137, false, REGTYPE_SETTING}, INT16, 10},
     {{138, false, REGTYPE_SETTING}, INT16, 10},
@@ -78,14 +78,11 @@ static const register_def_t holding_defs[] = {
     {{343, false, REGTYPE_SETTING}, UINT16, 1},
     {{348, true, REGTYPE_STATUS}, UINT16, 1},
     {{354, true, REGTYPE_STATUS}, UINT16, 1},
-
     {{387, false, REGTYPE_STATUS}, UINT16, 1},
     {{388, false, REGTYPE_STATUS}, UINT16, 1},
     {{389, false, REGTYPE_STATUS}, UINT16, 1},
     {{390, false, REGTYPE_STATUS}, UINT16, 1},
     {{391, false, REGTYPE_STATUS}, UINT16, 1},
-   
-
     {{538, true, REGTYPE_STATUS}, UINT16, 1},
     {{581, true, REGTYPE_STATUS}, UINT16, 1},
     {{599, true, REGTYPE_STATUS}, UINT16, 100},
@@ -94,7 +91,7 @@ static const register_def_t holding_defs[] = {
     {{678, false, REGTYPE_SETTING}, UINT16, 10},
    // {{703, false}, UINT16, 1},
     {{710, true, REGTYPE_STATUS}, UINT16, 1},
-    {{726, true, REGTYPE_SETTING}, UINT16, 1},
+    {{726, false, REGTYPE_SETTING}, UINT16, 1},
     {{733, true, REGTYPE_SETTING}, ENUMERATION, 1},
     {{734, true, REGTYPE_SETTING}, ENUMERATION, 1}};
   //  {{774, true}, UINT16, 1},
