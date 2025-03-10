@@ -11,9 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ENAGENT_DATA_REFRESH_PERIOD 30000 // ms
-#define ENAGENT_RETRY_TIMOUT 1000         // ms
-#define ENAGENT_COIL_ADDRESS_OFFSET 1000
+#define ENAGENT_RETRY_TIMOUT 1000 // ms
 
 typedef enum
 {
@@ -61,8 +59,13 @@ static void enagent_state_function_idle(enagent_task_controller_t *self)
 static void enagent_state_function_start_refresh(enagent_task_controller_t *self)
 {
     const coil_def_t *coil_defs = get_coil_def_array();
-    eMBMasterReqReadCoils(ENAGENT_SLAVE_ID,
-                          coil_defs[0].base.address, LAST_COIL_ADDRESS - coil_defs[0].base.address + 1, -1);
+    eMBMasterReqErrCode err = eMBMasterReqReadCoils(ENAGENT_SLAVE_ID,
+        coil_defs[0].base.address, LAST_COIL_ADDRESS - coil_defs[0].base.address + 1, -1);
+    if (err != MB_MRE_NO_ERR)
+    {
+        EVLOG_ERROR("Request failed with error %d", err);
+        enagent_set_task_state(self, ENA_STATE_IDLE, true);    
+    }
 
     enagent_set_task_state(self, ENA_STATE_REFRESH_COILS, true);
 }
@@ -126,9 +129,17 @@ static void enagent_state_function_refresh_registers(enagent_task_controller_t *
         else
         {
             EVLOG_DEBUG("Refreshing batch %d", current_batch);
-            eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID,
-                                            holdingRegBatches[current_batch][0], holdingRegBatches[current_batch][1], -1);
-            current_batch += 1;
+            err = eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID,
+                holdingRegBatches[current_batch][0], holdingRegBatches[current_batch][1], -1);
+            if (err == MB_MRE_NO_ERR)
+            {
+                current_batch += 1;
+            }
+            else
+            {
+                current_batch = 0;
+                enagent_set_task_state(self, ENA_STATE_IDLE, true);
+            }
         }
     }
 }
@@ -139,16 +150,17 @@ static void enagent_state_function_write_coil(enagent_task_controller_t *self)
 
     if (envent_get_request_result(&err))
     {
+        if (err == MB_MRE_NO_ERR)
+        {
+            enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_COIL, true);
+            err = eMBMasterReqReadCoils(ENAGENT_SLAVE_ID,
+                                        self->current_task_address, 1, -1);
+        }
         if (err != MB_MRE_NO_ERR)
         {
             EVLOG_ERROR("Request failed with error %d", err);
             enagent_set_task_state(self, ENA_STATE_IDLE, true);
-            return;
         }
-
-        enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_COIL, true);
-        eMBMasterReqReadCoils(ENAGENT_SLAVE_ID,
-                              self->current_task_address, 1, -1);
     }
 }
 
@@ -158,16 +170,17 @@ static void enagent_state_function_write_register(enagent_task_controller_t *sel
 
     if (envent_get_request_result(&err))
     {
+        if (err == MB_MRE_NO_ERR)
+        {
+            enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_REGISTER, true);
+            err = eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID,
+                                                  self->current_task_address, 1, -1);
+        }
         if (err != MB_MRE_NO_ERR)
         {
             EVLOG_ERROR("Request failed with error %d", err);
             enagent_set_task_state(self, ENA_STATE_IDLE, true);
-            return;
         }
-
-        enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_REGISTER, true);
-        eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID,
-                                        self->current_task_address, 1, -1);
     }
 }
 
@@ -180,16 +193,15 @@ static void enagent_state_function_refresh_single_coil(enagent_task_controller_t
         if (err != MB_MRE_NO_ERR)
         {
             EVLOG_ERROR("Request failed with error %d", err);
-            enagent_set_task_state(self, ENA_STATE_IDLE, true);
-            return;
         }
+        else
+        {
+            uint8_t *coils = envent_get_coil_value_array();
 
-        uint8_t *coils = envent_get_coil_value_array();
-
-        critical_section_enter_blocking(&(self->ipc_interface->update_mutex));
-        memcpy(self->ipc_interface->coilValues, coils, COIL_DEFINITION_COUNT);
-        critical_section_exit(&(self->ipc_interface->update_mutex));
-
+            critical_section_enter_blocking(&(self->ipc_interface->update_mutex));
+            memcpy(self->ipc_interface->coilValues, coils, COIL_DEFINITION_COUNT);
+            critical_section_exit(&(self->ipc_interface->update_mutex));
+        }
         enagent_set_task_state(self, ENA_STATE_IDLE, true);
     }
 }
@@ -203,17 +215,16 @@ static void enagent_state_function_refresh_single_register(enagent_task_controll
         if (err != MB_MRE_NO_ERR)
         {
             EVLOG_ERROR("Request failed with error %d", err);
-            enagent_set_task_state(self, ENA_STATE_IDLE, true);
-            return;
         }
+        else
+        {
+            uint16_t *registers = envent_get_register_value_array();
 
-        uint16_t *registers = envent_get_register_value_array();
-
-        critical_section_enter_blocking(&(self->ipc_interface->update_mutex));
-        memcpy(self->ipc_interface->registerValues, registers,
-               sizeof(registers) * REGISTER_DEFINITION_COUNT);
-        critical_section_exit(&(self->ipc_interface->update_mutex));
-
+            critical_section_enter_blocking(&(self->ipc_interface->update_mutex));
+            memcpy(self->ipc_interface->registerValues, registers,
+                   sizeof(registers) * REGISTER_DEFINITION_COUNT);
+            critical_section_exit(&(self->ipc_interface->update_mutex));
+        }
         enagent_set_task_state(self, ENA_STATE_IDLE, true);
     }
 }
@@ -279,7 +290,13 @@ static bool enagent_write_coil(enagent_task_controller_t *self, uint16_t coil_ad
         if (!coil_defs[index].base.readonly)
         {
             EVLOG_DEBUG("Requesting coil write address %d, value %d", coil_address, value);
-            eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, value, -1);
+            eMBMasterReqErrCode err = eMBMasterReqWriteCoil(ENAGENT_SLAVE_ID, coil_address, value, -1);
+            if (err != MB_MRE_NO_ERR)
+            {
+                EVLOG_ERROR("Error executing write coil, error code %d", err);
+                enagent_set_task_state(self, ENA_STATE_IDLE, false);
+                return false;
+            }
             self->current_task_address = coil_address;
             enagent_set_task_state(self, ENA_STATE_WRITE_COIL, false);
             return true;
@@ -306,7 +323,13 @@ static bool enagent_write_holding_register(enagent_task_controller_t *self,
         if (!register_defs[index].base.readonly)
         {
             EVLOG_DEBUG("Requesting holding register write address %d, value %d", register_address, value);
-            eMBMasterReqWriteHoldingRegister(ENAGENT_SLAVE_ID, register_address, value, -1);
+            eMBMasterReqErrCode err = eMBMasterReqWriteHoldingRegister(ENAGENT_SLAVE_ID, register_address, value, -1);
+            if (err != MB_MRE_NO_ERR)
+            {
+                EVLOG_ERROR("Error executing write holding register, error code %d", err);
+                enagent_set_task_state(self, ENA_STATE_IDLE, false);
+                return false;
+            }
             self->current_task_address = register_address;
             enagent_set_task_state(self, ENA_STATE_WRITE_REGISTER, false);
             return true;
@@ -323,7 +346,7 @@ static int64_t __isr enagent_refresh_timer_expired(alarm_id_t id, void *user_dat
     if (controller->state == ENA_STATE_IDLE)
     {
         enagent_set_task_state(controller, ENA_STATE_START_REFRESH, false);
-        return ((uint32_t)(controller->refresh_rate * 1000UL));
+        return ((int64_t)(controller->refresh_rate * 1000000UL));
     }
     else
     {
@@ -414,16 +437,29 @@ bool enagent_start_command_loop(envent_ipc_interface_t *interface, uint8_t refre
     return true;
 }
 
-void envent_create_write_coil_command(uint16_t coil_address, uint16_t value, envent_command_t *command)
+bool envent_create_write_command(uint16_t address, uint16_t value, envent_command_t *command)
 {
-    command->address = coil_address;
-    value = (value > 0) ? 0xff : 0;
-    command->command_function = enagent_write_coil;
-}
+    const coil_def_t *coil_defs = get_coil_def_array();
+    int16_t index = find_coil_index_binary(coil_defs, address);
+    if (index > -1)
+    {
+        command->address = address;
+        value = (value > 0) ? 0xff00 : 0;
+        command->value = value;
+        command->command_function = enagent_write_coil;
+        return true;
+    }
 
-void envent_create_write_register_command(uint16_t register_address, uint16_t value, envent_command_t *command)
-{
-    command->address = register_address;
-    command->value = value;
-    command->command_function = enagent_write_holding_register;
+    const register_def_t *register_defs = get_register_def_array();
+    index = find_register_index_binary(register_defs, address);
+    if (index > -1)
+    {
+        command->address = address;
+        command->value = value;
+        command->command_function = enagent_write_holding_register;
+        return true;
+    }
+    
+    EVLOG_ERROR("Invalid address %d. Cannot write coil/register.", address);
+    return false;
 }

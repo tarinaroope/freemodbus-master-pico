@@ -82,18 +82,7 @@ typedef struct
  * @param value The value to write to the coil. A non-zero value will be converted to 0xFF, and zero will remain 0.
  * @param command Pointer to the Envent command structure to be initialized.
  */
-void envent_create_write_coil_command(uint16_t coil_address, uint16_t value, envent_command_t* command);
-
-/**
- * @brief Creates a write register command for the Envent Modbus agent.
- *
- * This function initializes an Envent command structure to write a value to a specified register address.
- *
- * @param register_address The address of the register to write to.
- * @param value The value to write to the register.
- * @param command Pointer to the Envent command structure to be initialized.
- */
-void envent_create_write_register_command(uint16_t register_address, uint16_t value, envent_command_t* command);
+bool envent_create_write_command(uint16_t address, uint16_t value, envent_command_t *command);
 
 /**
  * @brief Starts the command loop for the agent.
