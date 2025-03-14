@@ -1,5 +1,7 @@
 #include "enervent_registers.h"
 
+// switch, sensor, setting, status
+
 /* Defines for Coils we want to read with this Master. These are enervent modbus coils. */
 static const coil_def_t coil_defs[] = {
     {{1, false, REGTYPE_SWITCH}},
@@ -19,8 +21,6 @@ static const coil_def_t coil_defs[] = {
     {{41, true, REGTYPE_STATUS}},
     {{42, true, REGTYPE_STATUS}},
     {{49, false, REGTYPE_SWITCH}}};
-
-    // switch, sensor, setting, status
 
 /* Defines for Holding Regs we want to read with this Master. These are enervent modbus holding registers.*/
 static const register_def_t holding_defs[] = {
@@ -55,55 +55,23 @@ static const register_def_t holding_defs[] = {
     {{74, false, REGTYPE_SETTING}, UINT16, 1},
     {{76, false, REGTYPE_SETTING}, UINT16, 1},
     {{100, false, REGTYPE_SETTING}, UINT16, 1},
-    {{101, false, REGTYPE_SETTING}, INT16, 10},
+    {{101, true, REGTYPE_SETTING}, INT16, 10},
     {{102, false, REGTYPE_SETTING}, UINT16, 1},
-    {{103, false, REGTYPE_SETTING}, INT16, 10},
-    {{104, false, REGTYPE_SETTING}, UINT16, 1},
-    {{110, false, REGTYPE_SETTING}, UINT16, 10},
-    {{114, false, REGTYPE_SETTING}, UINT16, 10},
-    {{116, false, REGTYPE_SETTING}, UINT16, 10},
-    {{120, false, REGTYPE_SETTING}, UINT16, 10},
-    {{122, false, REGTYPE_SETTING}, INT16, 1},
-    {{126, false, REGTYPE_SETTING}, INT16, 1},
-    {{128, false, REGTYPE_SETTING}, INT16, 1},
-    {{132, false, REGTYPE_SETTING}, INT16, 1},
+    {{103, true, REGTYPE_SETTING}, INT16, 10},
     {{134, true, REGTYPE_SENSOR}, INT16, 10},
     {{135, false, REGTYPE_SETTING}, INT16, 10},
-    {{137, false, REGTYPE_SETTING}, INT16, 10},
-    {{138, false, REGTYPE_SETTING}, INT16, 10},
-    {{139, false, REGTYPE_SETTING}, INT16, 10},
-    {{164, false, REGTYPE_SETTING}, INT16, 10},
-    {{172, false, REGTYPE_SETTING}, INT16, 10},
-    {{196, false, REGTYPE_SETTING}, INT16, 10},
-    {{343, false, REGTYPE_SETTING}, UINT16, 1},
-    {{348, true, REGTYPE_STATUS}, UINT16, 1},
-    {{354, true, REGTYPE_STATUS}, UINT16, 1},
-    {{387, false, REGTYPE_STATUS}, UINT16, 1},
-    {{388, false, REGTYPE_STATUS}, UINT16, 1},
-    {{389, false, REGTYPE_STATUS}, UINT16, 1},
-    {{390, false, REGTYPE_STATUS}, UINT16, 1},
-    {{391, false, REGTYPE_STATUS}, UINT16, 1},
+    {{137, true, REGTYPE_SETTING}, INT16, 10},
+    {{138, true, REGTYPE_SETTING}, INT16, 10},
+    {{139, true, REGTYPE_SETTING}, INT16, 10},
+    {{164, true, REGTYPE_SETTING}, INT16, 10},
+    {{172, true, REGTYPE_SETTING}, INT16, 10},
+    {{196, true, REGTYPE_SETTING}, INT16, 10},
     {{538, true, REGTYPE_STATUS}, UINT16, 1},
     {{581, true, REGTYPE_STATUS}, UINT16, 1},
-    {{599, true, REGTYPE_STATUS}, UINT16, 100},
-    {{676, false, REGTYPE_SETTING}, UINT16, 10},
-    {{677, false, REGTYPE_SETTING}, UINT16, 10},
-    {{678, false, REGTYPE_SETTING}, UINT16, 10},
-   // {{703, false}, UINT16, 1},
-    {{710, true, REGTYPE_STATUS}, UINT16, 1},
-    {{726, false, REGTYPE_SETTING}, UINT16, 1},
-    {{733, true, REGTYPE_SETTING}, ENUMERATION, 1},
-    {{734, true, REGTYPE_SETTING}, ENUMERATION, 1}};
-  //  {{774, true}, UINT16, 1},
-  //  {{780, true}, UINT16, 10},
-  //  {{781, true}, UINT16, 10},
-  //  {{783, true}, UINT16, 10},
-  //  {{784, true}, UINT16, 10},
-  //  {{785, true}, UINT16, 10},
-  //  {{788, true}, UINT16, 1},
-  //  {{789, true}, UINT16, 1},
-  //  {{798, true}, UINT16, 1}};
-
+    {{676, true, REGTYPE_SETTING}, UINT16, 10},
+    {{677, true, REGTYPE_SETTING}, UINT16, 10},
+    {{678, true, REGTYPE_SETTING}, UINT16, 10}};
+   
 const coil_def_t *get_coil_def_array()
 {
     return (coil_def_t *)coil_defs;

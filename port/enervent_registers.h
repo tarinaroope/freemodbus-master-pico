@@ -12,10 +12,10 @@
 #include "pico/stdlib.h"
 
 #define LAST_COIL_ADDRESS                   49  ///< Last coil number to read
-#define LAST_REGISTER_ADDRESS               734 ///< Last holding register number to read
+#define LAST_REGISTER_ADDRESS               678 ///< Last holding register number to read
 
 #define COIL_DEFINITION_COUNT               17  ///< Number of coils to read
-#define REGISTER_DEFINITION_COUNT           69  ///< Number of holding registers to read
+#define REGISTER_DEFINITION_COUNT           47  ///< Number of holding registers to read
 
 /**
  * @enum data_type_def_t

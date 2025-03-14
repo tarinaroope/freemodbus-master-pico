@@ -38,15 +38,14 @@ struct enagent_task_controller_t
     uint8_t refresh_rate;
 };
 
-#define BATCH_COUNT 6
+#define BATCH_COUNT 5
 static const uint16_t holdingRegBatches[BATCH_COUNT][2] =
     {
         {6, 71},    // 6-76
         {100, 97},  // 100-196
-        {343, 52},  // 340-391
-        {538, 62},  // 538-599
-        {676, 3},   // 676-678
-        {710, 25}}; // 710-734
+        {538, 1},  // 340-391
+        {581, 1},  // 538-599
+        {676, 3}};   // 676-678
 
 static void enagent_set_task_state(enagent_task_controller_t *self,
                                    enagent_task_state_t state, bool safe);
@@ -153,6 +152,7 @@ static void enagent_state_function_write_coil(enagent_task_controller_t *self)
         if (err == MB_MRE_NO_ERR)
         {
             enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_COIL, true);
+            EVLOG_DEBUG("Refreshing coil %d", self->current_task_address);
             err = eMBMasterReqReadCoils(ENAGENT_SLAVE_ID,
                                         self->current_task_address, 1, -1);
         }
@@ -173,6 +173,7 @@ static void enagent_state_function_write_register(enagent_task_controller_t *sel
         if (err == MB_MRE_NO_ERR)
         {
             enagent_set_task_state(self, ENA_STATE_REFRESH_SINGLE_REGISTER, true);
+            EVLOG_DEBUG("Refreshing holding register %d", self->current_task_address);
             err = eMBMasterReqReadHoldingRegister(ENAGENT_SLAVE_ID,
                                                   self->current_task_address, 1, -1);
         }
@@ -201,6 +202,10 @@ static void enagent_state_function_refresh_single_coil(enagent_task_controller_t
             critical_section_enter_blocking(&(self->ipc_interface->update_mutex));
             memcpy(self->ipc_interface->coilValues, coils, COIL_DEFINITION_COUNT);
             critical_section_exit(&(self->ipc_interface->update_mutex));
+
+            // Notify about the re-freshed data
+            uint8_t value = 1;
+            queue_try_add(&(self->ipc_interface->notify_queue), &value);
         }
         enagent_set_task_state(self, ENA_STATE_IDLE, true);
     }
@@ -224,6 +229,10 @@ static void enagent_state_function_refresh_single_register(enagent_task_controll
             memcpy(self->ipc_interface->registerValues, registers,
                    sizeof(registers) * REGISTER_DEFINITION_COUNT);
             critical_section_exit(&(self->ipc_interface->update_mutex));
+
+            // Notify about the re-freshed data
+            uint8_t value = 1;
+            queue_try_add(&(self->ipc_interface->notify_queue), &value);
         }
         enagent_set_task_state(self, ENA_STATE_IDLE, true);
     }

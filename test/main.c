@@ -18,6 +18,16 @@ void core1_main(void)
 {
     EVLOG_INFO("Start listening for notifications in Core 1...");
     sleep_ms(5000);
+/*
+    uint16_t target_address = 139;
+    uint16_t payload_integer = 230;
+    envent_command_t cmd;
+    envent_create_write_command(target_address,payload_integer, &cmd);
+   
+   
+    printf("cmd %d %d", target_address, payload_integer);
+    queue_try_add(&gInterface.command_queue, &cmd);
+*/
 
     const register_def_t* registerArray = get_register_def_array();
     const coil_def_t* coilArray = get_coil_def_array();
